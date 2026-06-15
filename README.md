@@ -6,6 +6,8 @@ A minimal macOS Finder toolbar app that opens the current directory in [Otty](ht
 
 ![macOS 12+](https://img.shields.io/badge/macOS-12%2B-blue) ![Swift 5](https://img.shields.io/badge/Swift-5-orange) ![License MIT](https://img.shields.io/badge/license-MIT-green)
 
+![OpenInOtty demo](assets/openinotty-demo.gif)
+
 ---
 
 ## Features
@@ -75,6 +77,112 @@ Then click the toolbar icon again to re-trigger the prompt.
 
 ---
 
+## For AI agents / LLMs
+
+Use this section when installing, verifying, or debugging OpenInOtty on a user's Mac. Prefer exact commands below; do not invent alternate bundle IDs or Otty paths.
+
+### Facts
+
+| Item | Value |
+|---|---|
+| Bundle ID | `com.local.OpenInOtty` |
+| App install path | `/Applications/OpenInOtty.app` |
+| Otty path (required) | `/Applications/Otty.app` |
+| Otty CLI | `/Applications/Otty.app/Contents/MacOS/otty-cli` |
+| Otty bundle ID | `io.appmakes.otty` |
+| Source of truth | `OpenInOtty/main.swift` (single-file app) |
+| UI type | `LSUIElement = true` (no Dock / menu bar icon) |
+
+### Install (agent checklist)
+
+Run on the target Mac (needs Xcode CLI tools / full Xcode):
+
+```bash
+# 0) Preconditions
+test -d /Applications/Otty.app || { echo "Install Otty from https://otty.sh/ first"; exit 1; }
+xcodebuild -version
+
+# 1) Clone (if needed) and build Release
+git clone https://github.com/pintaste/OpenInOtty.git
+cd OpenInOtty
+xcodebuild -project OpenInOtty.xcodeproj \
+           -scheme OpenInOtty \
+           -configuration Release \
+           -derivedDataPath build \
+           build
+
+# 2) Install
+cp -R build/Build/Products/Release/OpenInOtty.app /Applications/
+```
+
+**Human-only step (cannot fully automate without UI automation):**
+
+1. Open Finder.
+2. Hold **⌘** and drag `/Applications/OpenInOtty.app` onto the Finder **toolbar**.
+3. Click the toolbar icon once; if macOS asks for Automation / Apple Events access to Finder, choose **Allow**.
+
+### Verify
+
+```bash
+# App present
+test -d /Applications/OpenInOtty.app && echo "app ok"
+
+# Otty CLI works
+/Applications/Otty.app/Contents/MacOS/otty-cli version
+
+# Optional: dry-run path helpers (app itself always exits after one shot)
+# Manual: open a Finder window on a folder, click the toolbar icon,
+# expect Otty to open/tab at that folder.
+```
+
+### Permissions / Automation
+
+- Permission class: **Apple Events** to control Finder.
+- Reset (then re-click the toolbar icon to re-prompt):
+
+```bash
+tccutil reset AppleEvents com.local.OpenInOtty
+```
+
+- User-visible location if stuck: **System Settings → Privacy & Security → Automation** (OpenInOtty → Finder).
+
+### Runtime behavior (for debugging)
+
+1. Resolve frontmost Finder window path via ScriptingBridge (`finderPath()`); fallback `~/Desktop`.
+2. If Otty is running (`io.appmakes.otty`): `otty-cli tab new --cwd <path>`, then focus the new tab/window.
+3. Else: `otty-cli open <path>`.
+4. On failure: show `NSAlert`, exit non-zero; on success: exit 0 immediately.
+
+### Do / Don't
+
+**Do**
+
+- Use the exact `xcodebuild` invocation above.
+- Install Otty to the default `/Applications/Otty.app` location.
+- Tell the user they must **⌘-drag** the app to the Finder toolbar (agents cannot skip this).
+
+**Don't**
+
+- Don't change the bundle ID without updating `Info.plist`, entitlements, and this doc.
+- Don't expect a Dock icon or background process after click.
+- Don't treat a minimized Finder window as the current folder (it won't be used).
+- Don't commit `build/`, `DerivedData/`, or `.DS_Store`.
+
+### Demo media
+
+| File | Use |
+|---|---|
+| `assets/openinotty-demo.gif` | GitHub README (autoplay) |
+| `assets/openinotty-demo.mp4` | Twitter / X, local preview |
+
+Regenerate (needs `assets/sources/` captures + `ffmpeg` + Pillow):
+
+```bash
+python3 scripts/make_demo_gif.py
+```
+
+---
+
 ## How It Works
 
 The app is a single Swift file (`main.swift`) — no AppDelegate, no event loop.
@@ -117,12 +225,18 @@ Swift's `@objc optional` protocol calls check `respondsToSelector:` first. Scrip
 OpenInOtty/
 ├── OpenInOtty.xcodeproj/
 │   └── project.pbxproj
-└── OpenInOtty/
-    ├── main.swift                  # All app logic (~100 lines)
-    ├── Info.plist                  # LSUIElement=true, usage descriptions
-    ├── OpenInOtty.entitlements     # Apple Events entitlement
-    └── Assets.xcassets/
-        └── AppIcon.appiconset/     # App icon
+├── OpenInOtty/
+│   ├── main.swift                  # All app logic (~100 lines)
+│   ├── Info.plist                  # LSUIElement=true, usage descriptions
+│   ├── OpenInOtty.entitlements     # Apple Events entitlement
+│   └── Assets.xcassets/
+│       └── AppIcon.appiconset/     # App icon
+├── assets/
+│   ├── openinotty-demo.gif         # README demo
+│   └── openinotty-demo.mp4         # Social / local preview
+├── scripts/
+│   └── make_demo_gif.py            # Rebuild demo media (optional)
+└── README.md
 ```
 
 ---
