@@ -1,9 +1,11 @@
 # OpenInOtty
 
-点一下 Finder 工具栏图标，就在 [Otty](https://otty.sh/) 里打开当前目录。
+[English](./README.md) | [中文](./README-zh.md)
 
-> 灵感来自 [OpenInTerminal-Lite](https://github.com/Ji4n1ng/OpenInTerminal)。  
-> 若你已经在用 OpenInTerminal 并切换多种终端，也可以直接用上游的 Otty 支持（见下方「和 OpenInTerminal 怎么选」）。
+A minimal macOS Finder toolbar app that opens the current directory in [Otty](https://otty.sh/) with a single click.
+
+> Inspired by [OpenInTerminal-Lite](https://github.com/Ji4n1ng/OpenInTerminal).  
+> If you already use OpenInTerminal and switch between several terminals, you can use upstream Otty support instead — see **OpenInOtty vs OpenInTerminal** below.
 
 ![macOS 12+](https://img.shields.io/badge/macOS-12%2B-blue) ![Swift 5](https://img.shields.io/badge/Swift-5-orange) ![License MIT](https://img.shields.io/badge/license-MIT-green)
 
@@ -11,35 +13,35 @@
 
 ---
 
-## 和 OpenInTerminal 怎么选
+## OpenInOtty vs OpenInTerminal
 
-| 你的情况 | 建议 |
+| Your situation | Use |
 |---|---|
-| **只用 Otty**，想要最轻的一键 Toolbar（开 tab、尽量 focus 到新 tab） | 用 **OpenInOtty**（本项目） |
-| 已经在用 **OpenInTerminal / Lite**，在 Terminal / iTerm / Ghostty / Otty 等之间切换 | 用 [OpenInTerminal](https://github.com/Ji4n1ng/OpenInTerminal)（[Otty 支持 PR #276](https://github.com/Ji4n1ng/OpenInTerminal/pull/276)） |
-| 两个都装 | 可以并存，不冲突。本 app 只服务 Otty；上游是多终端全家桶 |
+| **Otty only**, want the lightest one-click toolbar (new tab + focus when possible) | **OpenInOtty** (this project) |
+| Already on **OpenInTerminal / Lite**, switching Terminal / iTerm / Ghostty / Otty, etc. | [OpenInTerminal](https://github.com/Ji4n1ng/OpenInTerminal) ([Otty support PR #276](https://github.com/Ji4n1ng/OpenInTerminal/pull/276)) |
+| Both installed | Fine — they don’t conflict. This app is Otty-only; upstream is a multi-terminal suite |
 
-简单说：
+In short:
 
-- **OpenInOtty** = Otty 专用遥控器（`otty-cli`：已在跑就新开 tab，并尽量 focus 过去）
-- **OpenInTerminal** = 通用工具箱（`open -a Otty` 也能开，但不会走 Otty 的 tab CLI）
+- **OpenInOtty** = Otty remote (`otty-cli`: if Otty is running, open a new tab and focus it)
+- **OpenInTerminal** = multi-app toolbox (`open -a Otty` works, but does not use Otty’s tab CLI)
 
 ---
 
 ## Features
 
-- **One click** — 点工具栏图标，Otty 打开到当前 Finder 路径
+- **One click** — toolbar icon opens Otty at the current Finder path
 - **Smart path**
-  - 有选中项 → 用选中项（文件则用**父目录**）
-  - 无选中 → 用当前 Finder 窗口的文件夹
-  - 没有可用窗口 → 打开桌面
+  - Selection → use selected item (if it’s a **file**, use the **parent folder**)
+  - No selection → current Finder window folder
+  - No usable window → Desktop
 - **Smart Otty**
-  - Otty 已在跑 → `otty-cli tab new --cwd <path>`，再按 cwd 找到新 tab 并 `tab focus`
-  - Otty 未在跑 → `otty-cli open <path>`
-  - CLI 失败或找不到 → 回退 `open -a <Otty.app> <path>`（Otty 支持把文件夹当文档打开）
-- **Find Otty by bundle id** — 不硬编码只认 `/Applications`（Launch Services 能找到即可；找不到再试默认路径）
-- **Error alerts** — 失败弹 `NSAlert`，不静默退出
-- **No menu bar / Dock icon** — `LSUIElement = true`，点完即退
+  - Otty already running → `otty-cli tab new --cwd <path>`, then match by cwd and `tab focus`
+  - Otty not running → `otty-cli open <path>`
+  - CLI missing or fails → fall back to `open -a <Otty.app> <path>` (Otty accepts folders as documents)
+- **Find Otty by bundle id** — not hard-coded to `/Applications` only (Launch Services first, then default path)
+- **Error alerts** — failures show an `NSAlert` instead of failing silently
+- **No menu bar / Dock icon** — `LSUIElement = true`; quits right after dispatch
 
 ---
 
@@ -48,10 +50,10 @@
 | Requirement | Version |
 |---|---|
 | macOS | 12.0 Monterey or later |
-| Xcode | 15+（从 App Store 装即可） |
-| [Otty](https://otty.sh/) | 较新版本 |
+| Xcode | 15+ (free from the App Store) |
+| [Otty](https://otty.sh/) | Any recent version |
 
-Otty 通常装在 `/Applications/Otty.app`。装在 Launch Services 能扫到的其它位置也可以。
+Otty is usually at `/Applications/Otty.app`. Any location Launch Services can find is fine.
 
 ---
 
@@ -107,8 +109,8 @@ Use this section when installing, verifying, or debugging OpenInOtty on a user's
 |---|---|
 | Bundle ID | `com.local.OpenInOtty` |
 | App install path | `/Applications/OpenInOtty.app` |
-| Otty discovery | `NSWorkspace.urlForApplication(withBundleIdentifier: "io.appmakes.otty")`，否则 `/Applications/Otty.app` |
-| Otty CLI | `<Otty.app>/Contents/MacOS/otty-cli`（可选；没有则走 `open -a`） |
+| Otty discovery | `NSWorkspace.urlForApplication(withBundleIdentifier: "io.appmakes.otty")`, else `/Applications/Otty.app` |
+| Otty CLI | `<Otty.app>/Contents/MacOS/otty-cli` (optional; falls back to `open -a`) |
 | Otty bundle ID | `io.appmakes.otty` |
 | Source of truth | `OpenInOtty/main.swift` (single-file app) |
 | UI type | `LSUIElement = true` (no Dock / menu bar icon) |
@@ -266,7 +268,8 @@ OpenInOtty/
 │   └── openinotty-demo.mp4         # Social / local preview
 ├── scripts/
 │   └── make_demo_gif.py            # Rebuild demo media (optional)
-└── README.md
+├── README.md                       # English (default)
+└── README-zh.md                    # Chinese
 ```
 
 ---
@@ -275,17 +278,17 @@ OpenInOtty/
 
 **Nothing happens when I click the icon**
 
-- Make sure Otty is installed (Spotlight / Launchpad 能搜到即可，不必须在 `/Applications`)
+- Make sure Otty is installed (Spotlight / Launchpad is enough; `/Applications` is not required)
 - Check **System Settings → Privacy & Security → Automation** (OpenInOtty → Finder)
-- If the permission entry is missing: `tccutil reset AppleEvents com.local.OpenInOtty` then click again
+- If the permission entry is missing: `tccutil reset AppleEvents com.local.OpenInOtty`, then click again
 
 **Opens Desktop instead of the current folder**
 
-- 至少要有一个未最小化的 Finder 窗口，或先选中某个文件/文件夹
+- You need at least one non-minimized Finder window, or a selected file/folder
 
 **Otty opens a new window instead of a tab**
 
-- 说明当时 Otty 没在跑，或 `otty-cli` 不可用已回退到 `open -a`。先手动打开一次 Otty 再点图标，应会走新 tab。
+- Otty was not running, or `otty-cli` was unavailable and the app fell back to `open -a`. Launch Otty once, then click the toolbar icon again for tab behavior.
 
 ---
 
