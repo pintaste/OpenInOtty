@@ -1,8 +1,9 @@
 # OpenInOtty
 
-A minimal macOS Finder toolbar app that opens the current directory in [Otty](https://otty.sh/) terminal with a single click.
+点一下 Finder 工具栏图标，就在 [Otty](https://otty.sh/) 里打开当前目录。
 
-> Inspired by [OpenInTerminal-Lite](https://github.com/Ji4n1ng/OpenInTerminal).
+> 灵感来自 [OpenInTerminal-Lite](https://github.com/Ji4n1ng/OpenInTerminal)。  
+> 若你已经在用 OpenInTerminal 并切换多种终端，也可以直接用上游的 Otty 支持（见下方「和 OpenInTerminal 怎么选」）。
 
 ![macOS 12+](https://img.shields.io/badge/macOS-12%2B-blue) ![Swift 5](https://img.shields.io/badge/Swift-5-orange) ![License MIT](https://img.shields.io/badge/license-MIT-green)
 
@@ -10,16 +11,35 @@ A minimal macOS Finder toolbar app that opens the current directory in [Otty](ht
 
 ---
 
+## 和 OpenInTerminal 怎么选
+
+| 你的情况 | 建议 |
+|---|---|
+| **只用 Otty**，想要最轻的一键 Toolbar（开 tab、尽量 focus 到新 tab） | 用 **OpenInOtty**（本项目） |
+| 已经在用 **OpenInTerminal / Lite**，在 Terminal / iTerm / Ghostty / Otty 等之间切换 | 用 [OpenInTerminal](https://github.com/Ji4n1ng/OpenInTerminal)（[Otty 支持 PR #276](https://github.com/Ji4n1ng/OpenInTerminal/pull/276)） |
+| 两个都装 | 可以并存，不冲突。本 app 只服务 Otty；上游是多终端全家桶 |
+
+简单说：
+
+- **OpenInOtty** = Otty 专用遥控器（`otty-cli`：已在跑就新开 tab，并尽量 focus 过去）
+- **OpenInTerminal** = 通用工具箱（`open -a Otty` 也能开，但不会走 Otty 的 tab CLI）
+
+---
+
 ## Features
 
-- **One click** — click the toolbar icon, Otty opens at the current Finder path
-- **Smart behavior**
-  - Otty already running → opens a **new tab** in the existing window (`otty-cli tab new --cwd <path>`)
-  - Otty not running → launches Otty with the directory (`otty-cli open <path>`)
-- **Graceful fallback** — no open Finder window? Opens your Desktop instead
-- **Error alerts** — failures surface as an `NSAlert` dialog instead of silently exiting
-- **No menu bar / Dock icon** — pure toolbar utility (`LSUIElement = true`)
-- Quits immediately after dispatching the command (zero background footprint)
+- **One click** — 点工具栏图标，Otty 打开到当前 Finder 路径
+- **Smart path**
+  - 有选中项 → 用选中项（文件则用**父目录**）
+  - 无选中 → 用当前 Finder 窗口的文件夹
+  - 没有可用窗口 → 打开桌面
+- **Smart Otty**
+  - Otty 已在跑 → `otty-cli tab new --cwd <path>`，再按 cwd 找到新 tab 并 `tab focus`
+  - Otty 未在跑 → `otty-cli open <path>`
+  - CLI 失败或找不到 → 回退 `open -a <Otty.app> <path>`（Otty 支持把文件夹当文档打开）
+- **Find Otty by bundle id** — 不硬编码只认 `/Applications`（Launch Services 能找到即可；找不到再试默认路径）
+- **Error alerts** — 失败弹 `NSAlert`，不静默退出
+- **No menu bar / Dock icon** — `LSUIElement = true`，点完即退
 
 ---
 
@@ -28,10 +48,10 @@ A minimal macOS Finder toolbar app that opens the current directory in [Otty](ht
 | Requirement | Version |
 |---|---|
 | macOS | 12.0 Monterey or later |
-| Xcode | 15+ (free from the App Store) |
-| [Otty](https://otty.sh/) | Any recent version |
+| Xcode | 15+（从 App Store 装即可） |
+| [Otty](https://otty.sh/) | 较新版本 |
 
-Otty must be installed at `/Applications/Otty.app` (the default location).
+Otty 通常装在 `/Applications/Otty.app`。装在 Launch Services 能扫到的其它位置也可以。
 
 ---
 
@@ -79,7 +99,7 @@ Then click the toolbar icon again to re-trigger the prompt.
 
 ## For AI agents / LLMs
 
-Use this section when installing, verifying, or debugging OpenInOtty on a user's Mac. Prefer exact commands below; do not invent alternate bundle IDs or Otty paths.
+Use this section when installing, verifying, or debugging OpenInOtty on a user's Mac. Prefer exact commands below; do not invent alternate bundle IDs.
 
 ### Facts
 
@@ -87,8 +107,8 @@ Use this section when installing, verifying, or debugging OpenInOtty on a user's
 |---|---|
 | Bundle ID | `com.local.OpenInOtty` |
 | App install path | `/Applications/OpenInOtty.app` |
-| Otty path (required) | `/Applications/Otty.app` |
-| Otty CLI | `/Applications/Otty.app/Contents/MacOS/otty-cli` |
+| Otty discovery | `NSWorkspace.urlForApplication(withBundleIdentifier: "io.appmakes.otty")`，否则 `/Applications/Otty.app` |
+| Otty CLI | `<Otty.app>/Contents/MacOS/otty-cli`（可选；没有则走 `open -a`） |
 | Otty bundle ID | `io.appmakes.otty` |
 | Source of truth | `OpenInOtty/main.swift` (single-file app) |
 | UI type | `LSUIElement = true` (no Dock / menu bar icon) |
@@ -98,8 +118,9 @@ Use this section when installing, verifying, or debugging OpenInOtty on a user's
 Run on the target Mac (needs Xcode CLI tools / full Xcode):
 
 ```bash
-# 0) Preconditions
-test -d /Applications/Otty.app || { echo "Install Otty from https://otty.sh/ first"; exit 1; }
+# 0) Preconditions — Otty via Launch Services or default path
+mdfind "kMDItemCFBundleIdentifier == 'io.appmakes.otty'" | head -1
+# or: test -d /Applications/Otty.app
 xcodebuild -version
 
 # 1) Clone (if needed) and build Release
@@ -127,12 +148,15 @@ cp -R build/Build/Products/Release/OpenInOtty.app /Applications/
 # App present
 test -d /Applications/OpenInOtty.app && echo "app ok"
 
-# Otty CLI works
-/Applications/Otty.app/Contents/MacOS/otty-cli version
+# Otty discoverable
+mdfind "kMDItemCFBundleIdentifier == 'io.appmakes.otty'" | head -1
 
-# Optional: dry-run path helpers (app itself always exits after one shot)
-# Manual: open a Finder window on a folder, click the toolbar icon,
-# expect Otty to open/tab at that folder.
+# Otty CLI (if present)
+CLI="$(mdfind "kMDItemCFBundleIdentifier == 'io.appmakes.otty'" | head -1)/Contents/MacOS/otty-cli"
+test -x "$CLI" && "$CLI" version
+
+# Manual: open a Finder window on a folder (or select a file), click the toolbar icon,
+# expect Otty to open/tab at that folder (file → parent directory).
 ```
 
 ### Permissions / Automation
@@ -148,17 +172,23 @@ tccutil reset AppleEvents com.local.OpenInOtty
 
 ### Runtime behavior (for debugging)
 
-1. Resolve frontmost Finder window path via ScriptingBridge (`finderPath()`); fallback `~/Desktop`.
-2. If Otty is running (`io.appmakes.otty`): `otty-cli tab new --cwd <path>`, then focus the new tab/window.
-3. Else: `otty-cli open <path>`.
-4. On failure: show `NSAlert`, exit non-zero; on success: exit 0 immediately.
+1. Resolve path via ScriptingBridge (`finderPath()`):
+   - selection first (file → parent directory)
+   - else front Finder window folder
+   - else `~/Desktop`
+2. Resolve Otty.app by bundle id, else `/Applications/Otty.app`.
+3. If `otty-cli` exists:
+   - Otty running → `tab new --cwd` → `tab list --json` match cwd → `tab focus <id>`
+   - else → `otty-cli open <path>`
+4. If CLI missing or fails → `/usr/bin/open -a <Otty.app> <path>`.
+5. On total failure: `NSAlert`, exit non-zero; on success: exit 0 immediately.
 
 ### Do / Don't
 
 **Do**
 
 - Use the exact `xcodebuild` invocation above.
-- Install Otty to the default `/Applications/Otty.app` location.
+- Prefer discovering Otty by bundle id; don’t assume only `/Applications`.
 - Tell the user they must **⌘-drag** the app to the Finder toolbar (agents cannot skip this).
 
 **Don't**
@@ -167,6 +197,7 @@ tccutil reset AppleEvents com.local.OpenInOtty
 - Don't expect a Dock icon or background process after click.
 - Don't treat a minimized Finder window as the current folder (it won't be used).
 - Don't commit `build/`, `DerivedData/`, or `.DS_Store`.
+- Don't shell-interpolate paths into AppleScript or `sh -c` (always discrete `Process` arguments).
 
 ### Demo media
 
@@ -193,24 +224,23 @@ Click toolbar icon
        ▼
   finderPath()
   ┌─────────────────────────────────────────────────────────┐
-  │ SBApplication(bundleIdentifier: "com.apple.Finder")     │
-  │ perform(NSSelectorFromString("FinderWindows"))           │
-  │   → first window → target → URL → file path             │
-  │   → fallback: ~/Desktop                                 │
+  │ selection? → first item URL (file → parent dir)         │
+  │ else FinderWindows → first window target URL            │
+  │ else ~/Desktop                                          │
   └─────────────────────────────────────────────────────────┘
        │
        ▼
-  Is Otty running?
-  ┌─────────────┬──────────────────────────────────────┐
-  │     YES     │  otty-cli tab new --cwd <path>        │
-  │     NO      │  otty-cli open <path>                 │
-  └─────────────┴──────────────────────────────────────┘
+  resolve Otty.app (bundle id → default path)
        │
        ▼
-  Error? → NSAlert dialog
-       │
-       ▼
-    exit(0)
+  otty-cli available?
+  ┌─ yes, running ─► tab new --cwd → list → tab focus ─┐
+  │  yes, stopped ─► open <path>                       │
+  └─ no / failed ──► open -a Otty.app <path> ──────────┤
+                                                       ▼
+                                              Error? → NSAlert
+                                                       │
+                                                     exit
 ```
 
 **Why `perform(NSSelectorFromString:)` instead of a ScriptingBridge protocol?**
@@ -226,7 +256,7 @@ OpenInOtty/
 ├── OpenInOtty.xcodeproj/
 │   └── project.pbxproj
 ├── OpenInOtty/
-│   ├── main.swift                  # All app logic (~100 lines)
+│   ├── main.swift                  # All app logic
 │   ├── Info.plist                  # LSUIElement=true, usage descriptions
 │   ├── OpenInOtty.entitlements     # Apple Events entitlement
 │   └── Assets.xcassets/
@@ -245,13 +275,17 @@ OpenInOtty/
 
 **Nothing happens when I click the icon**
 
-- Make sure Otty is installed at `/Applications/Otty.app`
-- Check that you've granted Apple Events permission in **System Settings → Privacy & Security → Automation**
-- If the permission entry is missing, run `tccutil reset AppleEvents com.local.OpenInOtty` and click again
+- Make sure Otty is installed (Spotlight / Launchpad 能搜到即可，不必须在 `/Applications`)
+- Check **System Settings → Privacy & Security → Automation** (OpenInOtty → Finder)
+- If the permission entry is missing: `tccutil reset AppleEvents com.local.OpenInOtty` then click again
 
 **Opens Desktop instead of the current folder**
 
-- You need at least one Finder window open. A minimized window does not count.
+- 至少要有一个未最小化的 Finder 窗口，或先选中某个文件/文件夹
+
+**Otty opens a new window instead of a tab**
+
+- 说明当时 Otty 没在跑，或 `otty-cli` 不可用已回退到 `open -a`。先手动打开一次 Otty 再点图标，应会走新 tab。
 
 ---
 
