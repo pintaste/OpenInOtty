@@ -15,3 +15,6 @@ xcuserdata/
 
 # Signing
 *.mobileprovision
+
+# Claude Code
+CLAUDE.md
