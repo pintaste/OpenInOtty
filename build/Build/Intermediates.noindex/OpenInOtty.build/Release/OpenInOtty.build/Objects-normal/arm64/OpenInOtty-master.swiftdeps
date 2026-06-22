@@ -1,8 +1,0 @@
-version: "Apple Swift version 6.1.2 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)"
-options: "d6fdf4e1d99ce9c5bfb5f101fb44b77e17c2ff09e09a952ab8242c9f058a3f9c"
-build_start_time: [1782134361, 269538000]
-build_end_time: [1782134366, 819374000]
-inputs:
-  "/Users/pin/SideProjects/OpenInOtty/OpenInOtty/main.swift": [1782134350, 916488650]
-  ? "/Users/pin/SideProjects/OpenInOtty/build/Build/Intermediates.noindex/OpenInOtty.build/Release/OpenInOtty.build/DerivedSources/GeneratedAssetSymbols.swift"
-  : [1782134359, 581773488]
