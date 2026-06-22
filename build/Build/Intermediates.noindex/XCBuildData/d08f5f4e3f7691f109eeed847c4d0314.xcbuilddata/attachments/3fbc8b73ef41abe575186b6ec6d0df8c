@@ -1,0 +1,20 @@
+{
+  "" : {
+    "const-values" : "/Users/pin/SideProjects/OpenInOtty/build/Build/Intermediates.noindex/OpenInOtty.build/Release/OpenInOtty.build/Objects-normal/arm64/OpenInOtty-master.swiftconstvalues",
+    "dependencies" : "/Users/pin/SideProjects/OpenInOtty/build/Build/Intermediates.noindex/OpenInOtty.build/Release/OpenInOtty.build/Objects-normal/arm64/OpenInOtty-master.d",
+    "diagnostics" : "/Users/pin/SideProjects/OpenInOtty/build/Build/Intermediates.noindex/OpenInOtty.build/Release/OpenInOtty.build/Objects-normal/arm64/OpenInOtty-master.dia",
+    "emit-module-dependencies" : "/Users/pin/SideProjects/OpenInOtty/build/Build/Intermediates.noindex/OpenInOtty.build/Release/OpenInOtty.build/Objects-normal/arm64/OpenInOtty-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/pin/SideProjects/OpenInOtty/build/Build/Intermediates.noindex/OpenInOtty.build/Release/OpenInOtty.build/Objects-normal/arm64/OpenInOtty-master-emit-module.dia",
+    "swift-dependencies" : "/Users/pin/SideProjects/OpenInOtty/build/Build/Intermediates.noindex/OpenInOtty.build/Release/OpenInOtty.build/Objects-normal/arm64/OpenInOtty-master.swiftdeps"
+  },
+  "/Users/pin/SideProjects/OpenInOtty/OpenInOtty/main.swift" : {
+    "index-unit-output-path" : "/OpenInOtty.build/Release/OpenInOtty.build/Objects-normal/arm64/main.o",
+    "llvm-bc" : "/Users/pin/SideProjects/OpenInOtty/build/Build/Intermediates.noindex/OpenInOtty.build/Release/OpenInOtty.build/Objects-normal/arm64/main.bc",
+    "object" : "/Users/pin/SideProjects/OpenInOtty/build/Build/Intermediates.noindex/OpenInOtty.build/Release/OpenInOtty.build/Objects-normal/arm64/main.o"
+  },
+  "/Users/pin/SideProjects/OpenInOtty/build/Build/Intermediates.noindex/OpenInOtty.build/Release/OpenInOtty.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/OpenInOtty.build/Release/OpenInOtty.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/pin/SideProjects/OpenInOtty/build/Build/Intermediates.noindex/OpenInOtty.build/Release/OpenInOtty.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/pin/SideProjects/OpenInOtty/build/Build/Intermediates.noindex/OpenInOtty.build/Release/OpenInOtty.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  }
+}
