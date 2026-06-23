@@ -1,6 +1,6 @@
 # OpenInOtty
 
-A minimal macOS Finder toolbar app that opens the current directory in [Otty](https://apps.apple.com/app/otty/id6450504539) terminal with a single click.
+A minimal macOS Finder toolbar app that opens the current directory in [Otty](https://otty.sh/) terminal with a single click.
 
 > Inspired by [OpenInTerminal-Lite](https://github.com/Ji4n1ng/OpenInTerminal).
 
@@ -26,7 +26,7 @@ A minimal macOS Finder toolbar app that opens the current directory in [Otty](ht
 |---|---|
 | macOS | 12.0 Monterey or later |
 | Xcode | 15+ (free from the App Store) |
-| [Otty](https://apps.apple.com/app/otty/id6450504539) | Any recent version |
+| [Otty](https://otty.sh/) | Any recent version |
 
 Otty must be installed at `/Applications/Otty.app` (the default location).
 
