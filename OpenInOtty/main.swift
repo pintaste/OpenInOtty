@@ -46,28 +46,43 @@ func otty(_ args: [String]) -> (output: String, status: Int32) {
     return (output, p.terminationStatus)
 }
 
+// MARK: - Show user-visible error via notification
+
+func notifyError(_ message: String) {
+    let notif = NSUserNotification()
+    notif.title = "OpenInOtty"
+    notif.informativeText = message
+    NSUserNotificationCenter.default.deliver(notif)
+}
+
 // MARK: - Launch Otty
 
 let path = finderPath()
 let ottyCliPath = "/Applications/Otty.app/Contents/MacOS/otty-cli"
 
-guard FileManager.default.fileExists(atPath: ottyCliPath) else { exit(1) }
+guard FileManager.default.fileExists(atPath: ottyCliPath) else {
+    notifyError("Otty 未找到，请从 otty.sh 下载安装")
+    exit(1)
+}
 
 let isRunning = NSWorkspace.shared.runningApplications
     .contains { $0.bundleIdentifier == "io.appmakes.otty" }
 
 if isRunning {
-    // Create tab, then find its window and bring it to front
-    otty(["tab", "new", "--cwd", path])
+    // Create tab in the current window
+    let (_, tabStatus) = otty(["tab", "new", "--cwd", path])
+    guard tabStatus == 0 else {
+        notifyError("无法在 Otty 中创建新标签页")
+        exit(1)
+    }
 
-    // Find the active tab with the highest index — that's the one just created
+    // Find the newly created tab: it has the highest index among all tabs
+    // (new tabs are appended, so max index == just-created tab)
     let (json, _) = otty(["tab", "list", "--json"])
     if let data = json.data(using: .utf8),
        let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
        let tabs = root["data"] as? [[String: Any]] {
-        let newTab = tabs
-            .filter { $0["active"] as? Bool == true }
-            .max { ($0["index"] as? Int ?? 0) < ($1["index"] as? Int ?? 0) }
+        let newTab = tabs.max { ($0["index"] as? Int ?? 0) < ($1["index"] as? Int ?? 0) }
         if let windowId = newTab?["window_id"] as? String {
             otty(["window", "focus", windowId])
         }
