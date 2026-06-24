@@ -40,19 +40,20 @@ func otty(_ args: [String]) -> (output: String, status: Int32) {
     let pipe = Pipe()
     p.standardOutput = pipe
     p.standardError = pipe
-    try? p.run()
+    guard (try? p.run()) != nil else { return ("", 1) }
     p.waitUntilExit()
     let output = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
     return (output, p.terminationStatus)
 }
 
-// MARK: - Show user-visible error via notification
+// MARK: - Show user-visible error via alert
 
 func notifyError(_ message: String) {
-    let notif = NSUserNotification()
-    notif.title = "OpenInOtty"
-    notif.informativeText = message
-    NSUserNotificationCenter.default.deliver(notif)
+    let alert = NSAlert()
+    alert.messageText = "OpenInOtty"
+    alert.informativeText = message
+    alert.alertStyle = .warning
+    alert.runModal()
 }
 
 // MARK: - Launch Otty
@@ -88,9 +89,17 @@ if isRunning {
         }
     }
 
-    NSWorkspace.shared.runningApplications
-        .first { $0.bundleIdentifier == "io.appmakes.otty" }?
-        .activate(options: .activateIgnoringOtherApps)
+    let ottyApp = NSWorkspace.shared.runningApplications
+        .first { $0.bundleIdentifier == "io.appmakes.otty" }
+    if #available(macOS 14.0, *) {
+        ottyApp?.activate()
+    } else {
+        ottyApp?.activate(options: .activateIgnoringOtherApps)
+    }
 } else {
-    otty(["open", path])
+    let (_, openStatus) = otty(["open", path])
+    guard openStatus == 0 else {
+        notifyError("无法启动 Otty")
+        exit(1)
+    }
 }

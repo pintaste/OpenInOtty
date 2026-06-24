@@ -15,6 +15,7 @@ A minimal macOS Finder toolbar app that opens the current directory in [Otty](ht
   - Otty already running → opens a **new tab** in the existing window (`otty-cli tab new --cwd <path>`)
   - Otty not running → launches Otty with the directory (`otty-cli open <path>`)
 - **Graceful fallback** — no open Finder window? Opens your Desktop instead
+- **Error alerts** — failures surface as an `NSAlert` dialog instead of silently exiting
 - **No menu bar / Dock icon** — pure toolbar utility (`LSUIElement = true`)
 - Quits immediately after dispatching the command (zero background footprint)
 
@@ -98,6 +99,9 @@ Click toolbar icon
   └─────────────┴──────────────────────────────────────┘
        │
        ▼
+  Error? → NSAlert dialog
+       │
+       ▼
     exit(0)
 ```
 
@@ -114,7 +118,7 @@ OpenInOtty/
 ├── OpenInOtty.xcodeproj/
 │   └── project.pbxproj
 └── OpenInOtty/
-    ├── main.swift                  # All app logic (~50 lines)
+    ├── main.swift                  # All app logic (~100 lines)
     ├── Info.plist                  # LSUIElement=true, usage descriptions
     ├── OpenInOtty.entitlements     # Apple Events entitlement
     └── Assets.xcassets/
